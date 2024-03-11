@@ -1,10 +1,16 @@
+Rtype=["add","sub","sll","slt","sltu","xor","srl","or","and"]
+IType=["addi","sltiu","lw","jalr"]
+Stype=["sw"]
+Utype=["lui","auipc"]
+Jtype=["jal"]
+Btype=["beq","bne","blt","bge","bltu","bgeu"]
+
+
 def decimal_to_binary(n,len): 
     n_binary =bin(n &0xffffffff).replace("0b", "")
     n_binary = n_binary.zfill(32)  
     len=32-len
-    print(n_binary)
     return n_binary[len:]
-
 reg_dict = {
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011", "tp": "00100",
     "t0": "00101", "t1": "00110", "t2": "00111", "s0": "01000", "fp": "01000",
@@ -14,21 +20,15 @@ reg_dict = {
     "s8": "11000", "s9": "11001", "s10": "11010", "s11": "11011", "t3": "11100",
     "t4": "11101", "t5": "11110", "t6": "11111"
 }
-
 def twos_complement(num):
     return bin(2**12 + num)[2:].zfill(12)
-    
-
 def twos_complement_bits(num,bits):
     return bin(num & (2**bits - 1))[2:].zfill(bits)
-
-
 def assemble_r_type_instruction(instruction, rd, rs1, rs2):
-    funct3 = {"ADD": "000","SUB": "000","SLT": "010","SLTU": "011","XOR": "100","SLL": "001","SRL": "101","OR": "110","AND": "111"}
-    funct7 = {"ADD": "0000000","SUB": "0100000","SLT": "0000000","SLTU": "0000000","XOR": "0000000","SLL": "0000000","SRL": "0000000","OR": "0000000","AND": "0000000"}
+    funct3 = {"add": "000","sub": "000","slt": "010","sltu": "011","xor": "100","sll": "001","srl": "101","or": "110","and": "111"}
+    funct7 = {"add": "0000000","sub": "0100000","slt": "0000000","sltu": "0000000","xor": "0000000","sll": "0000000","srl": "0000000","or": "0000000","and": "0000000"}
 
     opcode_binary ="0110011"
-    print (opcode_binary)
     rd_binary = reg_dict[rd]
     rs1_binary = reg_dict[rs1]
     rs2_binary = reg_dict[rs2]
@@ -38,8 +38,6 @@ def assemble_r_type_instruction(instruction, rd, rs1, rs2):
     # Concatenate all parts to form the binary instruction
     binary_instruction = funct7_binary + rs2_binary + rs1_binary + funct3_binary + rd_binary + opcode_binary
     return binary_instruction
-
-
 def assemble_i_type_instruction(instruction, rd, rs1, imm):
     opcodes = {
         "lw": "0000011",
@@ -65,6 +63,7 @@ def assemble_i_type_instruction(instruction, rd, rs1, imm):
     binary_instruction = imm_binary[:12] + rs1_binary + funct3_binary+ rd_binary+ opcode
     return binary_instruction
 
+
 def assemble_s_type_binary_sw_modified(rs2, rs1, imm):
     if imm < -2048 or imm > 2047:
         return None
@@ -82,8 +81,7 @@ def assemble_s_type_binary_sw_modified(rs2, rs1, imm):
     binary_instruction = f"{imm_upper} {rs2_binary} {rs1_binary} 010 {imm_lower} {opcode}"
 
     return binary_instruction
-
-def assemble_u_type_instruction(opcode, rd, imm):
+def assemble_u_type_instruction(instruction, rd, imm):
     opcodes = {
     "lui": "0110111",
     "auipc": "0010111"
@@ -91,14 +89,12 @@ def assemble_u_type_instruction(opcode, rd, imm):
     imm_bin = twos_complement_bits(imm,32)  # Ensure immediate value is 20 bits wide
     imm_bin = imm_bin[:20]  # Take the least significant 20 bits
     rd_bin = reg_dict[rd]  # Get binary representation of rd from reg_dict
-    machine_code = imm_bin+ rd_bin + opcodes[opcode]
+    machine_code = imm_bin+ rd_bin + opcodes[instruction]
 
     return machine_code
-
 def assemble_j_type_instruction(rd, imm):
     imm = twos_complement_bits(imm,21) # Convert to two's complement
     imm=str(imm)
-    #print(imm)
     x1=imm[0]
     x2=imm[10:20]
     x3=imm[9]
@@ -106,12 +102,50 @@ def assemble_j_type_instruction(rd, imm):
     rd_bin = reg_dict[rd]  # Get binary representation of the destination register
     machine_code = x1+x2+x3+x4 + rd_bin +"1101111"
     return machine_code
+def assemble_b_type_instruction(instruction, rs2, rs1,imm):
+    opcode = "1100011"
+    funct3 = {"beq": "000", "bne": "001", "bge": "101", "bgeu": "111","blt": "100", "bltu": "110"}
+    imm = twos_complement_bits(imm, 13)
+    x1 = imm[0]
+    x2= imm[2:8]
+    x3 = reg_dict[rs2]
+    x4 = reg_dict[rs1]
+    x5 = funct3[instruction]
+    x6 = imm[8:12]
+    x7 = imm[1]
+    binary_instruction = x1+x2+x3+x4+x5+x6+x7+opcode
+    return binary_instruction
+# instruction = "blt"#input()
+# rs1 = "s5"#input()  # Accept register name directly
+# rs2 = "s6"#input()  # Accept register name directly
+# imm = 16 #int(input())
 
-opcode = "lui"#input()
-rd = "t0"#input()  # Accept register name directly
-imm = 100 #int(input())
-
-
-
-binary_instruction = assemble_u_type_instruction(opcode, rd, imm)
-print(binary_instruction)
+with open('C:/Users/Harshit/Desktop/VSCode/Python/CO proj/input.txt', 'r') as file:
+    for line in file:
+        instruction, temp1= line.split()
+        if instruction in Rtype:
+            rd, rs1, rs2 = temp1.split(",")
+            binary_instruction = assemble_r_type_instruction(instruction, rd, rs1, rs2)
+            print(binary_instruction)
+        elif instruction in IType:
+            rd, rs1, imm = temp1.split(",")
+            binary_instruction = assemble_i_type_instruction(instruction, rd, rs1, int(imm))
+            print(binary_instruction)
+        elif instruction in Stype:
+            rs2, rs1, imm = temp1.split(",")
+            binary_instruction = assemble_s_type_binary_sw_modified(rs2, rs1, int(imm))
+            print(binary_instruction)
+        elif instruction in Utype:
+            rd, imm = temp1.split(",")
+            binary_instruction = assemble_u_type_instruction(instruction, rd, int(imm))  
+            print(binary_instruction)
+        elif instruction in Jtype:
+            rd, imm = temp1.split(",")
+            binary_instruction = assemble_j_type_instruction(rd, int(imm))
+            print(binary_instruction)
+        elif instruction in Btype:
+            rs1, rs2, imm = temp1.split(",")
+            binary_instruction = assemble_b_type_instruction(instruction, rs2, rs1, int(imm))       
+            print(binary_instruction)
+        else:
+            print("Invalid instruction")
