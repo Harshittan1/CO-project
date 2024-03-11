@@ -102,39 +102,18 @@ def assemble_j_type_instruction(rd, imm):
     rd_bin = reg_dict[rd]  # Get binary representation of the destination register
     machine_code = x1+x2+x3+x4 + rd_bin +"1101111"
     return machine_code
-def assemble_b_type_instruction(instruction, rs1, rs2, imm):
-    opcodes = {
-        "beq": "000",
-        "bne": "001",
-        "blt": "100",
-        "bge": "101",
-        "bltu": "110",
-        "bgeu": "111"
-    }
-
+def assemble_b_type_instruction(instruction, rs2, rs1,imm):
     opcode = "1100011"
-    funct3 = opcodes[instruction]
-
-    # Encode rs1 and rs2 registers
-    rs1_bin = reg_dict[rs1]
-    rs2_bin = reg_dict[rs2]
-
-    # Calculate the immediate offset and encode it in two's complement form
-    offset = imm
-    if offset < 0:
-        offset = 2**13 + offset  # Convert negative offset to positive
-
-    offset_bin = twos_complement_bits(offset, 13)
-
-    # Extract different bits from the immediate offset for encoding
-    imm_11 = offset_bin[0]  # Bit 11 of the immediate
-    imm_1_to_4 = offset_bin[1:5]  # Bits [1:4] of the immediate
-    imm_5_to_10 = offset_bin[5:11]  # Bits [5:10] of the immediate
-    imm_12 = offset_bin[12]  # Bit 12 of the immediate
-
-    # Concatenate the binary parts to form the complete binary instruction
-    binary_instruction = imm_12 + imm_5_to_10 + rs2_bin + rs1_bin + funct3 + imm_1_to_4 + imm_11 + opcode
-
+    funct3 = {"beq": "000", "bne": "001", "bge": "101", "bgeu": "111","blt": "100", "bltu": "110"}
+    imm = twos_complement_bits(imm, 13)
+    x1 = imm[0]
+    x2= imm[2:8]
+    x3 = reg_dict[rs2]
+    x4 = reg_dict[rs1]
+    x5 = funct3[instruction]
+    x6 = imm[8:12]
+    x7 = imm[1]
+    binary_instruction = x1+x2+x3+x4+x5+x6+x7+opcode
     return binary_instruction
 
 
@@ -187,7 +166,7 @@ with open('C:/Users/Harshit/Desktop/VSCode/Python/CO proj/input.txt', 'r') as fi
                 count+=1
             elif instruction in Btype:
                 rs1, rs2, imm = temp1.split(",")
-                binary_instruction = assemble_b_type_instruction(instruction, rs1, rs2, int(imm))       
+                binary_instruction = assemble_b_type_instruction(instruction, rs2, rs1, int(imm))       
                 if count!=countf-1:
                     output_file.write(binary_instruction + "\n")
                 else:
