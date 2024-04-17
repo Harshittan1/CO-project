@@ -77,26 +77,42 @@ def execute_s_type_instruction(instruction, rs1, rs2, imm, registers):
 #code for B-type instruction
 def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
     global pc
+    temp1=twos_complement_bin_to_int(sext(imm,False))
+    rs1 =int(rs1,2)
+    rs2= int(rs2,2)
     if instruction == "BEQ":
         if registers[rs1] == registers[rs2]:
+            
+            pc = pc +temp1 
+        else :
             pc = pc + 4
     elif instruction == "BNE":
         if registers[rs1] != registers[rs2]:
+            pc = pc + temp1
+        else :
             pc = pc + 4
     elif instruction == "BLT":
         if registers[rs1] < registers[rs2]:
+            pc = pc + temp1
+        else :
             pc = pc + 4
     elif instruction == "BLTU":
         if registers[rs1] < registers[rs2]:
+            pc = pc + temp1
+        else :
             pc = pc + 4
     elif instruction == "BGE":
         if registers[rs1] >= registers[rs2]:
+            pc = pc + temp1
+        else :
             pc = pc + 4
     elif instruction == "BGEU":
         if registers[rs1] >= registers[rs2]:
+            pc = pc + temp1
+        else :
             pc = pc + 4
     else:
-        pc = pc + imm
+        pc = pc + temp1
 
 #code for U-type instruction
 def execute_u_type_instruction(instruction, rd, imm, registers):
@@ -114,13 +130,30 @@ def execute_u_type_instruction(instruction, rd, imm, registers):
 def execute_j_type_instruction(instruction, rd, imm, registers):   
     global pc 
     rd=int(rd,2)
-    imm=int(imm,2)
+    temp1=twos_complement_bin_to_int(sext(imm,False))
     if instruction == "JAL":
         registers[rd] = pc + 4
-        pc = pc + imm
+        pc = pc + temp1
    
 
 registers = [0] * 32  # Initialize registers
+def twos_complement_bin_to_int(binary_str):
+
+    if binary_str[0] == '1':
+
+        num = int(binary_str, 2)
+
+    else:
+        
+        return int(binary_str, 2)
+
+
+def sext(num,integer=True):
+    signbit=num[0]
+    extra=32-len(num)
+    if(integer):
+        return int(extra*signbit+num,2) #change
+    return extra*signbit+num
 
 
 # Function to sign-extend immediate values
@@ -212,8 +245,8 @@ def execute_instruction(binary, pc, registers):
 
 
     # B-type instruction
-    if opcode == "1100011":
-        imm = binary[:1] + binary[24:31] + binary[1:7] + binary[20:24] + "0"
+   if opcode == "1100011":
+        imm = binary[-32]+binary[-8]+binary[-31:-25]+binary[-12:-8]+"0"
         rs2 = binary[7:12]
         rs1 = binary[12:17]
         funct3 = binary[17:20]
@@ -230,10 +263,8 @@ def execute_instruction(binary, pc, registers):
             instruction = "BGE"
         elif funct3 == "111":
             instruction = "BGEU"
-        execute_b_type_instruction(instruction, int(rs1, 2), int(rs2, 2), int(imm, 2), registers)
+        execute_b_type_instruction(instruction, rs1, rs2, imm, registers)
         return
-        # print(pc)
-        # print("Result of", instruction, "operation:", registers[int(, 2)])
 
     # U-type instruction
     if opcode == "0110111" or opcode == "0010111":
@@ -254,7 +285,7 @@ def execute_instruction(binary, pc, registers):
 
     # J-type instruction
     if opcode == "1101111":
-        imm = binary[0] + binary[12:20] + binary[11] + binary[1:11] + "0"
+        imm = binary[-32]+binary[-20:-12]+binary[-21]+binary[-31:-21]+"0"
         rd = binary[20:25]
         instruction = binary[:7]
         if opcode == "1101111":
@@ -266,6 +297,7 @@ def execute_instruction(binary, pc, registers):
         final.append("0b" + format(x, '032b'))
         print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         return "0b" + format(x, '032b')
+
 
 # Read instructions from file
 with open("input.txt", "r") as file:
