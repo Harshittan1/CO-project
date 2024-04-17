@@ -3,20 +3,12 @@ if len(sys.argv) != 3:
     print("Usage: python file.py input_file output_file")
     sys.exit(1)
 
-
-# Rest of your code...
-
-
-# Open the input and output files
-
-
-
 final = []
 instructions = []
 virtualhalt = False
 reg_dict = {
   "00000":"zero", "00001":"ra", "00010":"sp" ,  "00011":"gp", "00100":"tp",
-    "00101":"t0", "00110":"t1",  "00111":"t2",  "01000":"s0", "01000":"fp",
+    "00101":"t0", "00110":"t1",  "00111":"t2",  "01000":"s0",
     "01001":"s1", "01010":"a0",  "01011":"a1",  "01100":"a2", "01101":"a3",
     "01110":"a4", "01111":"a5",  "10000":"a6",  "10001":"a7", "10010":"s2",
     "10011":"s3", "10100":"s4",  "10101":"s5",  "10110":"s6", "10111":"s7",
@@ -26,10 +18,10 @@ reg_dict = {
 
 
 reg_value = {'zero': "0b00000000000000000000000000000000", 'ra': "0b00000000000000000000000000000000", 'sp': "0b00000000000000000000000100000000", 'gp': "0b00000000000000000000000000000000", 'tp': "0b00000000000000000000000000000000", 't0': "0b00000000000000000000000000000000", 't1': "0b00000000000000000000000000000000",
-  't2': "0b00000000000000000000000000000000", 's0': "0b00000000000000000000000000000000", 'fp': "0b00000000000000000000000000000000", 's1': "0b00000000000000000000000000000000", 'a0': "0b00000000000000000000000000000000", 'a1': "0b00000000000000000000000000000000", 'a2': "0b00000000000000000000000000000000",
-    'a3': "0b00000000000000000000000000000000", 'a4': "0b00000000000000000000000000000000", 'a5': "0b00000000000000000000000000000000", 'a6': "0b00000000000000000000000000000000", 'a7': "0b00000000000000000000000000000000", 's2': "0b00000000000000000000000000000000", 's3': "0b00000000000000000000000000000000",
-      's4': "0b00000000000000000000000000000000", 's5': "0b00000000000000000000000000000000", 's6': "0b00000000000000000000000000000000", 's7': "0b00000000000000000000000000000000", 's8': "0b00000000000000000000000000000000", 's9': "0b00000000000000000000000000000000", 's10': "0b00000000000000000000000000000000",
-        's11': "0b00000000000000000000000000000000", 't3': "0b00000000000000000000000000000000", 't4': "0b00000000000000000000000000000000", 't5': "0b00000000000000000000000000000000", 't6': "0b00000000000000000000000000000000"}
+             't2': "0b00000000000000000000000000000000",   's0': "0b00000000000000000000000000000000", 's1': "0b00000000000000000000000000000000", 'a0': "0b00000000000000000000000000000000", 'a1': "0b00000000000000000000000000000000", 'a2': "0b00000000000000000000000000000000",
+             'a3': "0b00000000000000000000000000000000",   'a4': "0b00000000000000000000000000000000", 'a5': "0b00000000000000000000000000000000", 'a6': "0b00000000000000000000000000000000", 'a7': "0b00000000000000000000000000000000", 's2': "0b00000000000000000000000000000000", 's3': "0b00000000000000000000000000000000",
+             's4': "0b00000000000000000000000000000000",   's5': "0b00000000000000000000000000000000", 's6': "0b00000000000000000000000000000000", 's7': "0b00000000000000000000000000000000", 's8': "0b00000000000000000000000000000000", 's9': "0b00000000000000000000000000000000", 's10': "0b00000000000000000000000000000000",
+             's11': "0b00000000000000000000000000000000",  't3': "0b00000000000000000000000000000000", 't4': "0b00000000000000000000000000000000", 't5': "0b00000000000000000000000000000000", 't6': "0b00000000000000000000000000000000"}
 
 datamemory = {
 "0x00010000":"0b00000000000000000000000000000000","0x00010004":"0b00000000000000000000000000000000","0x00010008":"0b00000000000000000000000000000000","0x0001000c":"0b00000000000000000000000000000000","0x00010010":"0b00000000000000000000000000000000","0x00010014":"0b00000000000000000000000000000000","0x00010018":"0b00000000000000000000000000000000","0x0001001c":"0b00000000000000000000000000000000","0x00010020":"0b00000000000000000000000000000000","0x00010024":"0b00000000000000000000000000000000","0x00010028":"0b00000000000000000000000000000000","0x0001002c":"0b00000000000000000000000000000000","0x00010030":"0b00000000000000000000000000000000","0x00010034":"0b00000000000000000000000000000000","0x00010038":"0b00000000000000000000000000000000","0x0001003c":"0b00000000000000000000000000000000","0x00010040":"0b00000000000000000000000000000000","0x00010044":"0b00000000000000000000000000000000","0x00010048":"0b00000000000000000000000000000000","0x0001004c":"0b00000000000000000000000000000000","0x00010050":"0b00000000000000000000000000000000","0x00010054":"0b00000000000000000000000000000000","0x00010058":"0b00000000000000000000000000000000","0x0001005c":"0b00000000000000000000000000000000","0x00010060":"0b00000000000000000000000000000000","0x00010064":"0b00000000000000000000000000000000","0x00010068":"0b00000000000000000000000000000000","0x0001006c":"0b00000000000000000000000000000000","0x00010070":"0b00000000000000000000000000000000","0x00010074":"0b00000000000000000000000000000000","0x00010078":"0b00000000000000000000000000000000","0x0001007c":"0b00000000000000000000000000000000"
@@ -73,12 +65,20 @@ def decimal_to_binary(n,len):
     len=32-len
     return n_binary[len:]
 
+#convert binary to decimal
+def sign_bin_to_dec(val, bits):
+    val=int(val,2)
+    """compute the 2's complement of int value val"""
+    if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+        val = val - (1 << bits)        # compute negative value
+    return val
+
 #code for I-type instruction
 def execute_i_type_instruction(instruction, rd, rs1, imm, registers):
     global pc
     rd=int(rd,2)
     rs1=int(rs1,2)
-    imm=int(imm,2)
+    imm= sign_bin_to_dec(imm,12)
     if instruction == "ADDI":
         registers[rd] = registers[rs1] + imm
         pc = pc + 4
@@ -95,9 +95,9 @@ def execute_i_type_instruction(instruction, rd, rs1, imm, registers):
 def execute_s_type_instruction(instruction, rs1, rs2, imm, registers):
     global pc
     pc = pc + 4
-    rs1=int(rs1,2)
-    rs2=int(rs2,2)
-    imm=int(imm,2)
+    rs1=sign_bin_to_dec(rs1,2)
+    rs2=sign_bin_to_dec(rs2,2)
+    imm= sign_bin_to_dec(imm,12)
     if instruction == "SW":
         datamemory["0x" +"000" + decimal_to_hexadecimal(registers[rs1] + imm)] = registers[rs2]  
 
@@ -106,8 +106,8 @@ def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
     global virtualhalt
     global pc
     temp1=twos_complement_bin_to_int(sext(imm,False))
-    rs1 =int(rs1,2)
-    rs2= int(rs2,2)
+    rs1 =sign_bin_to_dec(rs1,2)
+    rs2= sign_bin_to_dec(rs2,2)
     if instruction == "BEQ" and rs1 == 0 and rs2 == 0 and temp1 == 0:
         virtualhalt = True
     if instruction == "BEQ":
@@ -118,6 +118,7 @@ def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
             pc = pc + 4
     elif instruction == "BNE":
         if registers[rs1] != registers[rs2]:
+            print(registers[0],registers[19],temp1)
             pc = pc + temp1
         else :
             pc = pc + 4
@@ -145,23 +146,24 @@ def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
         pc = pc + temp1
 
 
-
 #code for U-type instruction
 def execute_u_type_instruction(instruction, rd, imm, registers):
 
     global pc
     rd=int(rd,2)
-    imm=int(imm,2)
-    pc = pc + 4
+    imm=int(imm+(12*"0"),2)
     if instruction == "LUI":
-        registers[rd] = imm << 12
+        registers[rd] = imm 
     elif instruction == "AUIPC":
-        registers[rd] = pc + imm << 12
+        
+        registers[rd] = pc + imm
+    pc = pc + 4
+        
 
 #code for J-type instruction
 def execute_j_type_instruction(instruction, rd, imm, registers):   
     global pc 
-    rd=int(rd,2)
+    rd=sign_bin_to_dec(rd,2)
     temp1=twos_complement_bin_to_int(sext(imm,False))
     if instruction == "JAL":
         registers[rd] = pc + 4
@@ -261,7 +263,7 @@ def execute_instruction(binary, pc, registers):
         execute_i_type_instruction(instruction, rd, rs1, imm, registers)
         x = (registers[int(rd, 2)])
         y = rd
-        reg_value[reg_dict[y]] = "0b" + format(x, '032b')
+        reg_value[reg_dict[y]] = "0b" + decimal_to_binary(x,32)
         final.append(("0b" + format(x, '032b')))
         return "0b" + format(x, '032b')
 
@@ -289,6 +291,7 @@ def execute_instruction(binary, pc, registers):
         if funct3 == "000":
             instruction = "BEQ"
         elif funct3 == "001":
+            print(rs1,rs2,imm)
             instruction = "BNE"
         elif funct3 == "100":
             instruction = "BLT"
@@ -312,7 +315,7 @@ def execute_instruction(binary, pc, registers):
             instruction = "AUIPC"
         execute_u_type_instruction(instruction, rd, imm, registers)
         x = (registers[int(rd, 2)])
-        y = int(rd,2)
+        y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
         return "0b" + format(x, '032b')
@@ -326,7 +329,7 @@ def execute_instruction(binary, pc, registers):
             instruction = "JAL"
         execute_j_type_instruction(instruction, rd, imm, registers)
         x = (registers[int(rd, 2)])
-        y = int(rd,2)
+        y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
         return "0b" + format(x, '032b')
@@ -349,24 +352,20 @@ f = 0
 while (not virtualhalt):
     i = pc//4
     (execute_instruction(str(inputs[i].strip().strip("\n")),pc,registers))
+    reg_value['zero']= "0b00000000000000000000000000000000"
     f+=1  
     outfile.write("0b" + format(pc, '032b') + " ")
     for i in reg_value.values():
+        print(reg_value)
         outfile.write(i)
         outfile.write(" ")
-    # print(answer)
     outfile.write("\n")
-    # final.append(answer)
 for x in datamemory:
     if not type(datamemory[x]) == str:
         datamemory[x] = "0b" + decimal_to_binary(datamemory[x], 32)
 
 for i in datamemory:
-    # print(type(i), type(datamemory[i]))
     outfile.write(str(i))
     outfile.write(":")
     outfile.write(str(datamemory[i]))
     outfile.write("\n")
-
-
-
