@@ -83,11 +83,7 @@ def execute_i_type_instruction(instruction, rd, rs1, imm, registers):
         registers[rd] = registers[rs1] + imm
         pc = pc + 4
     elif instruction == "LW":
-        print("===================harshit my son 138263 ======================")
-        print(registers[rs1], imm)
         registers[rd] = datamemory["0x" +"000" + decimal_to_hexadecimal(registers[rs1] + imm)]   
-        print("===================harshit my son ======================")
-        print(registers[rd], registers[rs1], imm)
         pc = pc + 4
     elif instruction == "SLTIU":
         registers[rd] = 1 if registers[rs1] < imm else 0
@@ -100,15 +96,10 @@ def execute_s_type_instruction(instruction, rs1, rs2, imm, registers):
     global pc
     pc = pc + 4
     rs1=int(rs1,2)
-    print(rs1)
     rs2=int(rs2,2)
     imm=int(imm,2)
-    print("===================harshit my son 10======================")
-    print(registers[rs1], registers[rs2], imm)
     if instruction == "SW":
-        datamemory["0x" +"000" + decimal_to_hexadecimal(registers[rs1] + imm)] = registers[rs2]   
-        print("===================harshit my son 20======================")
-        print("Data Memory: ",datamemory)                          
+        datamemory["0x" +"000" + decimal_to_hexadecimal(registers[rs1] + imm)] = registers[rs2]  
 
 #code for B-type instruction
 def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
@@ -117,7 +108,6 @@ def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
     temp1=twos_complement_bin_to_int(sext(imm,False))
     rs1 =int(rs1,2)
     rs2= int(rs2,2)
-    print(virtualhalt,"\n\n\n")
     if instruction == "BEQ" and rs1 == 0 and rs2 == 0 and temp1 == 0:
         virtualhalt = True
     if instruction == "BEQ":
@@ -153,7 +143,6 @@ def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
             pc = pc + 4
     else:
         pc = pc + temp1
-    print(virtualhalt,"\n\n\n")
 
 
 
@@ -249,7 +238,6 @@ def execute_instruction(binary, pc, registers):
             instruction = "AND"
         execute_r_type_instruction(instruction, rd, rs1, rs2, registers)
         x = (registers[int(rd, 2)])
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
@@ -274,7 +262,6 @@ def execute_instruction(binary, pc, registers):
         x = (registers[int(rd, 2)])
         y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         final.append(("0b" + format(x, '032b')))
         return "0b" + format(x, '032b')
 
@@ -297,7 +284,6 @@ def execute_instruction(binary, pc, registers):
         rs1 = binary[12:17]
         funct3 = binary[17:20]
         instruction = binary[:7]
-        print(virtualhalt,"\n\n\n")
         if funct3 == "000" and rs1 == "00000" and rs2 == "00000" and imm == "000000000000":
             virtualhalt = True
         if funct3 == "000":
@@ -312,7 +298,6 @@ def execute_instruction(binary, pc, registers):
             instruction = "BGE"
         elif funct3 == "111":
             instruction = "BGEU"
-        print(virtualhalt,"\n\n\n")
         execute_b_type_instruction(instruction, rs1, rs2, imm, registers)
         return
 
@@ -330,7 +315,6 @@ def execute_instruction(binary, pc, registers):
         y = int(rd,2)
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         return "0b" + format(x, '032b')
 
     # J-type instruction
@@ -345,7 +329,6 @@ def execute_instruction(binary, pc, registers):
         y = int(rd,2)
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         return "0b" + format(x, '032b')
 inputs = []
 # Read instructions from file
@@ -362,15 +345,10 @@ for line in file.readlines():
     line = line.strip()
     inputs.append(line)
 
-print(inputs)
 f = 0
-print("File Opened")
 while (not virtualhalt):
-    print(inputs)
     i = pc//4
     (execute_instruction(str(inputs[i].strip().strip("\n")),pc,registers))
-    print("pc : ",pc)
-    print(reg_value) 
     f+=1  
     outfile.write("0b" + format(pc, '032b') + " ")
     for i in reg_value.values():
@@ -392,8 +370,3 @@ for i in datamemory:
 
 
 
-# # Process instructions
-# with open(output_file, 'w') as f_output:
-#     for i in reg_value.values():
-#         f_output.write(i)
-#         f_output.write("\n")
