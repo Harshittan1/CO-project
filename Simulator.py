@@ -1,5 +1,19 @@
+import sys
+if len(sys.argv) != 3:
+    print("Usage: python file.py input_file output_file")
+    sys.exit(1)
+
+
+# Rest of your code...
+
+
+# Open the input and output files
+
+
+
 final = []
 instructions = []
+virtualhalt = False
 reg_dict = {
   "00000":"zero", "00001":"ra", "00010":"sp" ,  "00011":"gp", "00100":"tp",
     "00101":"t0", "00110":"t1",  "00111":"t2",  "01000":"s0", "01000":"fp",
@@ -22,6 +36,7 @@ datamemory = {
              }
 #code for R-type instruction
 def execute_r_type_instruction(instruction, rd, rs1, rs2, registers):
+    
     global pc
     pc = pc + 4
     rd=int(rd,2)
@@ -46,6 +61,18 @@ def execute_r_type_instruction(instruction, rd, rs1, rs2, registers):
     elif instruction == "AND":
         registers[rd] = registers[rs1] & registers[rs2]
 
+
+# convert decimal to hexadecimal
+def decimal_to_hexadecimal(n):
+    return hex(n).replace("0x", "")
+
+
+def decimal_to_binary(n,len): 
+    n_binary =bin(n &0xffffffff).replace("0b", "")
+    n_binary = n_binary.zfill(32)  
+    len=32-len
+    return n_binary[len:]
+
 #code for I-type instruction
 def execute_i_type_instruction(instruction, rd, rs1, imm, registers):
     global pc
@@ -56,7 +83,11 @@ def execute_i_type_instruction(instruction, rd, rs1, imm, registers):
         registers[rd] = registers[rs1] + imm
         pc = pc + 4
     elif instruction == "LW":
-        registers[rd] = datamemory[registers[rs1] + imm]   
+        print("===================harshit my son 138263 ======================")
+        print(registers[rs1], imm)
+        registers[rd] = datamemory["0x" +"000" + decimal_to_hexadecimal(registers[rs1] + imm)]   
+        print("===================harshit my son ======================")
+        print(registers[rd], registers[rs1], imm)
         pc = pc + 4
     elif instruction == "SLTIU":
         registers[rd] = 1 if registers[rs1] < imm else 0
@@ -69,17 +100,26 @@ def execute_s_type_instruction(instruction, rs1, rs2, imm, registers):
     global pc
     pc = pc + 4
     rs1=int(rs1,2)
+    print(rs1)
     rs2=int(rs2,2)
     imm=int(imm,2)
+    print("===================harshit my son 10======================")
+    print(registers[rs1], registers[rs2], imm)
     if instruction == "SW":
-        datamemory[registers[rs1] + imm] = registers[rs2]                             
+        datamemory["0x" +"000" + decimal_to_hexadecimal(registers[rs1] + imm)] = registers[rs2]   
+        print("===================harshit my son 20======================")
+        print("Data Memory: ",datamemory)                          
 
 #code for B-type instruction
 def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
+    global virtualhalt
     global pc
     temp1=twos_complement_bin_to_int(sext(imm,False))
     rs1 =int(rs1,2)
     rs2= int(rs2,2)
+    print(virtualhalt,"\n\n\n")
+    if instruction == "BEQ" and rs1 == 0 and rs2 == 0 and temp1 == 0:
+        virtualhalt = True
     if instruction == "BEQ":
         if registers[rs1] == registers[rs2]:
             
@@ -113,6 +153,9 @@ def execute_b_type_instruction(instruction, rs1, rs2, imm, registers):
             pc = pc + 4
     else:
         pc = pc + temp1
+    print(virtualhalt,"\n\n\n")
+
+
 
 #code for U-type instruction
 def execute_u_type_instruction(instruction, rd, imm, registers):
@@ -137,14 +180,17 @@ def execute_j_type_instruction(instruction, rd, imm, registers):
    
 
 registers = [0] * 32  # Initialize registers
+
 def twos_complement_bin_to_int(binary_str):
-
+    # Check if the number is negative (if the most significant bit is 1)
     if binary_str[0] == '1':
-
+        # Convert binary string to integer (with sign bit)
         num = int(binary_str, 2)
-
+        # Calculate the two's complement value by subtracting 2^n from the value
+        # where n is the number of bits in the binary string
+        return num - 2 ** len(binary_str)
     else:
-        
+        # If the number is positive, simply convert the binary string to integer
         return int(binary_str, 2)
 
 
@@ -155,8 +201,11 @@ def sext(num,integer=True):
         return int(extra*signbit+num,2) #change
     return extra*signbit+num
 
-
-
+# Function to sign-extend immediate values
+def sign_extend(imm, bits):
+    if imm & (1 << (bits - 1)):
+        imm -= 1 << bits
+    return imm
 
 # Update the program counter (pc)
 def update_pc(pc, imm):
@@ -166,7 +215,8 @@ def update_pc(pc, imm):
 pc = 0
 # Function to decode and execute instructions
 def execute_instruction(binary, pc, registers):
-    # global pc  
+    global virtualhalt
+    # global pc  # Add this line to modify the global pc value
     opcode = binary[-7::]
     
     # R-type instruction
@@ -199,6 +249,7 @@ def execute_instruction(binary, pc, registers):
             instruction = "AND"
         execute_r_type_instruction(instruction, rd, rs1, rs2, registers)
         x = (registers[int(rd, 2)])
+        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
@@ -223,6 +274,7 @@ def execute_instruction(binary, pc, registers):
         x = (registers[int(rd, 2)])
         y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
+        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         final.append(("0b" + format(x, '032b')))
         return "0b" + format(x, '032b')
 
@@ -245,6 +297,9 @@ def execute_instruction(binary, pc, registers):
         rs1 = binary[12:17]
         funct3 = binary[17:20]
         instruction = binary[:7]
+        print(virtualhalt,"\n\n\n")
+        if funct3 == "000" and rs1 == "00000" and rs2 == "00000" and imm == "000000000000":
+            virtualhalt = True
         if funct3 == "000":
             instruction = "BEQ"
         elif funct3 == "001":
@@ -257,6 +312,7 @@ def execute_instruction(binary, pc, registers):
             instruction = "BGE"
         elif funct3 == "111":
             instruction = "BGEU"
+        print(virtualhalt,"\n\n\n")
         execute_b_type_instruction(instruction, rs1, rs2, imm, registers)
         return
 
@@ -274,6 +330,7 @@ def execute_instruction(binary, pc, registers):
         y = int(rd,2)
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
+        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         return "0b" + format(x, '032b')
 
     # J-type instruction
@@ -288,26 +345,55 @@ def execute_instruction(binary, pc, registers):
         y = int(rd,2)
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
+        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         return "0b" + format(x, '032b')
-
-
+inputs = []
 # Read instructions from file
-with open("input.txt", "r") as file:
-    with open ("output.txt","w") as o:
-        for line in file:
-            (execute_instruction(str(line.strip().strip("\n")),pc,registers))
-            o.write("0b" + format(pc, '032b')+ " ")
-            while(execute_instruction(str(line.strip().strip("\n")),pc,registers)!=None):
-                o.write(execute_instruction(str(line.strip().strip("\n")),pc,registers)+" ")
-        
-        o.write("\n")
-            
-            # print("0b" + format(pc, '032b'))
-            # print(reg_value)   
+
+
+file_name = sys.argv[1]
+output_name = sys.argv[2]
+
+# Open the input and output files
+file = open(file_name, 'r')
+outfile = open(output_name, 'w')
+
+for line in file.readlines():
+    line = line.strip()
+    inputs.append(line)
+
+print(inputs)
+f = 0
+print("File Opened")
+while (not virtualhalt):
+    print(inputs)
+    i = pc//4
+    (execute_instruction(str(inputs[i].strip().strip("\n")),pc,registers))
+    print("pc : ",pc)
+    print(reg_value) 
+    f+=1  
+    outfile.write("0b" + format(pc, '032b') + " ")
+    for i in reg_value.values():
+        outfile.write(i)
+        outfile.write(" ")
+    # print(answer)
+    outfile.write("\n")
+    # final.append(answer)
+for x in datamemory:
+    if not type(datamemory[x]) == str:
+        datamemory[x] = "0b" + decimal_to_binary(datamemory[x], 32)
+
+for i in datamemory:
+    # print(type(i), type(datamemory[i]))
+    outfile.write(str(i))
+    outfile.write(":")
+    outfile.write(str(datamemory[i]))
+    outfile.write("\n")
+
 
 
 # # Process instructions
-with open("output.txt","w") as o:
-    for i in final:
-        o.write(i)
-        o.write("\n")
+# with open(output_file, 'w') as f_output:
+#     for i in reg_value.values():
+#         f_output.write(i)
+#         f_output.write("\n")
