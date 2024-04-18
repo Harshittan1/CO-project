@@ -156,11 +156,7 @@ def sext(num,integer=True):
     return extra*signbit+num
 
 
-# Function to sign-extend immediate values
-def sign_extend(imm, bits):
-    if imm & (1 << (bits - 1)):
-        imm -= 1 << bits
-    return imm
+
 
 # Update the program counter (pc)
 def update_pc(pc, imm):
@@ -170,7 +166,7 @@ def update_pc(pc, imm):
 pc = 0
 # Function to decode and execute instructions
 def execute_instruction(binary, pc, registers):
-    # global pc  # Add this line to modify the global pc value
+    # global pc  
     opcode = binary[-7::]
     
     # R-type instruction
@@ -203,7 +199,6 @@ def execute_instruction(binary, pc, registers):
             instruction = "AND"
         execute_r_type_instruction(instruction, rd, rs1, rs2, registers)
         x = (registers[int(rd, 2)])
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
@@ -228,7 +223,6 @@ def execute_instruction(binary, pc, registers):
         x = (registers[int(rd, 2)])
         y = rd
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         final.append(("0b" + format(x, '032b')))
         return "0b" + format(x, '032b')
 
@@ -245,7 +239,7 @@ def execute_instruction(binary, pc, registers):
 
 
     # B-type instruction
-   if opcode == "1100011":
+    if opcode == "1100011":
         imm = binary[-32]+binary[-8]+binary[-31:-25]+binary[-12:-8]+"0"
         rs2 = binary[7:12]
         rs1 = binary[12:17]
@@ -280,7 +274,6 @@ def execute_instruction(binary, pc, registers):
         y = int(rd,2)
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         return "0b" + format(x, '032b')
 
     # J-type instruction
@@ -295,19 +288,22 @@ def execute_instruction(binary, pc, registers):
         y = int(rd,2)
         reg_value[reg_dict[y]] = "0b" + format(x, '032b')
         final.append("0b" + format(x, '032b'))
-        print("Result of", instruction, "operation:","0b"+format(x,'032b'))
         return "0b" + format(x, '032b')
 
 
 # Read instructions from file
 with open("input.txt", "r") as file:
-    print("File Opened")
-    for line in file:
-        (execute_instruction(str(line.strip().strip("\n")),pc,registers))
-        print("pc : ",pc)
-        print(reg_value)   
-        # print(answer)
-        # final.append(answer)
+    with open ("output.txt","w") as o:
+        for line in file:
+            (execute_instruction(str(line.strip().strip("\n")),pc,registers))
+            o.write("0b" + format(pc, '032b')+ " ")
+            while(execute_instruction(str(line.strip().strip("\n")),pc,registers)!=None):
+                o.write(execute_instruction(str(line.strip().strip("\n")),pc,registers)+" ")
+        
+        o.write("\n")
+            
+            # print("0b" + format(pc, '032b'))
+            # print(reg_value)   
 
 
 # # Process instructions
@@ -315,4 +311,3 @@ with open("output.txt","w") as o:
     for i in final:
         o.write(i)
         o.write("\n")
-
